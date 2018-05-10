@@ -25,7 +25,7 @@ import fileinput
 #############################################################################
 
 
-vowels=['a','â','e','ê', 'é','á','i','í','o','ó','u','ú']
+vowels=['a','â','e','ê','é','é','á','i','í','o','ó','u','ú']
 def startsWithVowel(word): return word[:1] in vowels
 
 class rule ():
@@ -70,7 +70,7 @@ class rule ():
         for xx in range(0,len(self.language.pronouns)):
             pronoun=self.language.pronouns[xx]
             conjugation=endings[xx].replace('-', stem).replace('+',infinitive)
-            pronoun = "j'" if pronoun == 'je' and startsWithVowel(stem) else pronoun + " "
+            pronoun = "j'" if pronoun == 'je' and startsWithVowel(stem) else pronoun + " "  # FIXME French only
             expression=pronoun + conjugation
             yield (infinitive, english, tense_name, expression)
 
@@ -207,19 +207,19 @@ french_rules = [
 
 zijn_present        = ('ben',     'bent',       'is',      'zijn',       'zijn',     'zijn')
 zijn_imperfect      = ('was',     'was',        'was',     'waren',      'waren',    'waren')
-zijn_future         = ('zal',     'zal',        'zal',     'zullen',     'zullen',   'zullen')
+zijn_future         = ('zal',     'zult',       'zal',    'zullen',     'zullen',   'zullen')
 zijn_conditional    = ('zou',     'zou',        'zou',     'zouden',     'zouden',   'zouden')
 
 class Dutch:
     def __init__(self):
-        self.pronouns=('ik','jij', 'hij/zij', 'wij', 'jullie', 'zijn')
+        self.pronouns=('ik','jij', 'hij/zij', 'wij', 'jullie', 'zij')
 
 dutch = Dutch()
 
 dutch_rules= [
-    rule(french, 'zijn', '',
+    rule(dutch, 'zijn', '',
          zijn_present,
-         use_participle('geweest'),
+         use_participle('geweest', zijn_present),
          zijn_imperfect,
          use_participle('geweest', zijn_imperfect), # pluperfect
          zijn_future,

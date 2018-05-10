@@ -7,13 +7,13 @@ chords.tsv: chords.py
 chords.html: chords.tsv
 	 cat $< | tsvhtml > $@
 
-french-conjugations.tex: ../test/french-verbs.tsv
+french-conjugations.tex: ../test/french-verbs.tsv ./conjugation.py
 	cat $< | ./conjugation.py | ./tsv2latex.py > $@
 
 french-conjugations.pdf: french-conjugations.tex
 	pdflatex $<
 
-dutch-conjugations.tex: ../test/dutch-verbs.tsv
+dutch-conjugations.tex: ../test/dutch-verbs.tsv ./conjugation.py
 	cat $< | ./conjugation.py | ./tsv2latex.py > $@
 
 dutch-conjugations.pdf: dutch-conjugations.tex
