@@ -24,9 +24,34 @@ import fileinput
 # Conjugation rules
 #############################################################################
 
+consonants="bcdfghjklmnpqrstvwxyz"
+def isVowel (char):
+    return char not in consonants
 
-vowels=['a','â','e','ê','é','é','á','i','í','o','ó','u','ú']
-def startsWithVowel(word): return word[:1] in vowels
+for vowel in ['a','â','e','ê','é','é','á','i','í','o','ó','u','ú']:
+    assert(isVowel(vowel))
+
+def startsWithVowel(word): return word[:1] not in consonants
+
+assert(startsWithVowel('abc'))
+assert(startsWithVowel('é'))
+assert(not startsWithVowel('bc'))
+assert(startsWithVowel('été'))
+assert(startsWithVowel('étre'))
+
+def make_stem_from_infinitive(suffix, infinitive):
+    return infinitive[:-len(suffix.replace('-','').replace('+',''))]
+
+assert(make_stem_from_infinitive('-re', 'apprendre') == 'apprend')
+assert(make_stem_from_infinitive('', 'aller') == '')
+assert(make_stem_from_infinitive('+er', 'donner') == 'donn')
+
+def make_conjugation(ending, stem, infinitive):
+    return ending.replace('-', stem).replace('+',infinitive)
+
+assert(make_conjugation('-ons', 'pass', 'passer')=='passons')
+assert(make_conjugation('+ai', 'pass', 'passer')=='passerai')
+
 
 class rule ():
     def __init__ (self, language, pattern, suffix, present, perfect, imparfait, pluperfect, futur, future_perfect, conditional, present_subjunctive, perfect_subjunctive):
@@ -66,11 +91,11 @@ class rule ():
             # TODO yield self.conjugate_tense (infinitive, english,  'Perfect subjunctive', self.perfect_subjunctive)
 
     def conjugate_tense (self, infinitive, english, tense_name, endings):
-        stem=infinitive[:-len(self.suffix.replace('-','').replace('+',''))]
+        #       stem=infinitive[:-len(self.suffix.replace('-','').replace('+',''))]
+        stem=make_stem_from_infinitive(self.suffix, infinitive)
         for xx in range(0,len(self.language.pronouns)):
-            pronoun=self.language.pronouns[xx]
-            conjugation=endings[xx].replace('-', stem).replace('+',infinitive)
-            pronoun = "j'" if pronoun == 'je' and startsWithVowel(stem) else pronoun + " "  # FIXME French only
+            conjugation = make_conjugation(endings[xx], stem, infinitive)
+            pronoun = self.language.make_pronoun (self.language.pronouns[xx], conjugation)
             expression=pronoun + conjugation
             yield (infinitive, english, tense_name, expression)
 
@@ -91,7 +116,17 @@ class French:
     def __init__(self):
         self.pronouns=('je','tu', 'elle/il', 'nous', 'vous', 'ils/elles')
 
+    def make_pronoun (self, pronoun, conjugation):
+        return "j'" if pronoun == 'je' and startsWithVowel(conjugation) else pronoun + " "
+        
 french = French()
+
+assert(french.make_pronoun('je', 'étre') == "j'")
+assert(french.make_pronoun('je', 'ai fait') == "j'")
+assert(french.make_pronoun('tu', 'étre') == 'tu ')
+assert(french.make_pronoun('je', 'crois') == 'je ')
+assert(french.make_pronoun('nous', 'crois') == 'nous ')
+
 
 etre_present        = ('suis',     'es',       'est',      'etes',       'sommes',     'sont')
 etre_subjunctive    = ('sois que', 'sois que', 'soit que', 'soyez que',  'soyons que', 'soient que')
@@ -214,6 +249,9 @@ class Dutch:
     def __init__(self):
         self.pronouns=('ik','jij', 'hij/zij', 'wij', 'jullie', 'zij')
 
+    def make_pronoun (self, pronoun, conjugation):
+        return pronoun
+
 dutch = Dutch()
 
 dutch_rules= [
@@ -248,6 +286,7 @@ def conjugate_tsv_from_stdin ():
                 rules=dutch_rules
             else:
                 raise Error("Language %s unknown" % (verb))
+            print("%s\tEnglish\tTense\tExpression" % (verb))
         else:
             for line in match_rules(rules, verb, english):
                     print '\t'.join(line)
