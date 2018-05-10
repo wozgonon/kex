@@ -18,19 +18,20 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import re
+import fileinput
 
 #############################################################################
 # Conjugation rules
 #############################################################################
 
-pronouns=('je','tu', 'elle/il', 'nous', 'vous', 'ils/elles')
-vowels=['a','â','e','ê', 'é','á','i','í','o','ó','u','ú']
 
+vowels=['a','â','e','ê', 'é','á','i','í','o','ó','u','ú']
 def startsWithVowel(word): return word[:1] in vowels
 
 class rule ():
-    def __init__ (self, pattern, suffix, present, perfect, imparfait, pluperfect, futur, future_perfect, conditional, present_subjunctive, perfect_subjunctive):
+    def __init__ (self, language, pattern, suffix, present, perfect, imparfait, pluperfect, futur, future_perfect, conditional, present_subjunctive, perfect_subjunctive):
         # TODO plus_que_parfait, futur_anterior
+        self.language = language
         self.pattern = pattern
         self.suffix = suffix
         self.present = present
@@ -48,32 +49,49 @@ class rule ():
 
     def conjugate (self, infinitive, english):
         yield self.conjugate_tense (infinitive, english, 'Present', self.present)
-        yield self.conjugate_tense (infinitive, english, 'Passé composé', self.perfect)
+        yield self.conjugate_tense (infinitive, english, 'Perfect', self.perfect) # Passé composé
 
-        yield self.conjugate_tense (infinitive, english, 'Imparfait', self.imparfait)
+        yield self.conjugate_tense (infinitive, english, 'Imperfect', self.imparfait) # Imparfait
         yield self.conjugate_tense (infinitive, english,  'Pluperfect', self.pluperfect)
 
-        yield self.conjugate_tense (infinitive, english,  'Futur', self.futur)
+        yield self.conjugate_tense (infinitive, english,  'Future', self.futur) # Futur
         yield self.conjugate_tense (infinitive, english,  'Future perfect', self.future_perfect)
 
         yield self.conjugate_tense (infinitive, english,  'Conditional', self.conditional)
         # TODO self.conjugate_tense (infinitive, english,  'Conditional perfect', self.conditional)
-        
-        yield self.conjugate_tense (infinitive, english,  'Present subjunctive', self.present_subjunctive)
-        # TODO yield self.conjugate_tense (infinitive, english,  'Perfect subjunctive', self.perfect_subjunctive)
+        # TODO self.conjugate_tense (infinitive, english,  'Conditional future', self.conditional)
+
+        if self.present_subjunctive is not None:
+            yield self.conjugate_tense (infinitive, english,  'Present subjunctive', self.present_subjunctive)
+            # TODO yield self.conjugate_tense (infinitive, english,  'Perfect subjunctive', self.perfect_subjunctive)
 
     def conjugate_tense (self, infinitive, english, tense_name, endings):
         stem=infinitive[:-len(self.suffix.replace('-','').replace('+',''))]
-        for xx in range(0,len(pronouns)):
-            pronoun=pronouns[xx]
+        for xx in range(0,len(self.language.pronouns)):
+            pronoun=self.language.pronouns[xx]
             conjugation=endings[xx].replace('-', stem).replace('+',infinitive)
             pronoun = "j'" if pronoun == 'je' and startsWithVowel(stem) else pronoun + " "
             expression=pronoun + conjugation
             yield (infinitive, english, tense_name, expression)
-   
+
+def match_rules(rules, verb, english):
+    "Match a verb against a list of rules and conjugate it using the first matching rule"
+    for rule in rules:
+        if rule.match(verb):
+            for lines in rule.conjugate(verb, english):
+                for line in lines:
+                    yield line
+            break
+            
 #############################################################################
-# Conjugation rules
+# Conjugation rules for the French language
 #############################################################################
+
+class French:
+    def __init__(self):
+        self.pronouns=('je','tu', 'elle/il', 'nous', 'vous', 'ils/elles')
+
+french = French()
 
 etre_present        = ('suis',     'es',       'est',      'etes',       'sommes',     'sont')
 etre_subjunctive    = ('sois que', 'sois que', 'soit que', 'soyez que',  'soyons que', 'soient que')
@@ -94,8 +112,9 @@ def use_participle(participle, verb_present=avoir_present):
     "Conjugations based on a composite of an auxiliary verb and a partiple"
     return [avoir + ' ' + participle for avoir in verb_present]
 
-rules = [
-    rule('être', '',
+
+french_rules = [
+    rule(french, 'être', '',
          etre_present,
          use_participle('été'),
          use_stem('ét', imparfait),
@@ -105,7 +124,7 @@ rules = [
          use_stem('ser', conditional),
          etre_subjunctive,
          use_participle('été', avoir_subjunctive)),
-    rule('aller', '',
+    rule(french, 'aller', '',
          ('vais', 'va', 'va',  'allez', 'allons', 'vont'),
          use_participle('allé', etre_present),
          use_stem('all', imparfait),
@@ -115,7 +134,7 @@ rules = [
          use_stem('ir', conditional),
          ('aille', 'ailles', 'aille',  'alliez', 'allions', 'aillent'),
          use_participle('allé', avoir_subjunctive)),
-    rule('avoir', '',
+    rule(french, 'avoir', '',
          avoir_present,
          use_participle('eu'),
          use_stem('av', imparfait),
@@ -125,7 +144,7 @@ rules = [
          use_stem('aur', conditional),
          avoir_subjunctive,
          use_participle('eu', avoir_subjunctive)),
-    rule('faire', '',
+    rule(french, 'faire', '',
         ('fais',   'fais', 'fait',   'faissez',  'faisson',  'font'),
          use_participle('fait'),
          use_stem('fais', imparfait),
@@ -135,7 +154,7 @@ rules = [
          use_stem('fer', conditional),
          use_participle('fas', present_subjunctive),
          use_participle('fait', avoir_subjunctive)),
-    rule('.*re', '-re',
+    rule(french, '.*re', '-re',
         ('-e','-es','-e','-ons','-ez','-ent'),
          use_participle('-u'),
          imparfait,
@@ -145,7 +164,7 @@ rules = [
          conditional,
          present_subjunctive,
          use_participle('-u', avoir_subjunctive)),
-    rule('.*er', '-er',
+    rule(french, '.*er', '-er',
          ('-e','-es','-e','-ons','-ez','-ent'),
 #         ('-s','-s','','-ons','-ez','-ent'),
          use_participle('-é'),
@@ -156,7 +175,7 @@ rules = [
          conditional,
          present_subjunctive,
          use_participle('-é', avoir_subjunctive)),
-    rule('.*ir', '-ir',   # -mir, -tir, or -vir
+    rule(french, '.*ir', '-ir',   # -mir, -tir, or -vir
         ('-is','-is','-it','-issons','-issez','-issent'),
          use_participle('-i'),
          imparfait,
@@ -169,73 +188,70 @@ rules = [
 ]
 
 #############################################################################
-#  Verbs
-############################################################################
+# Conjugation rules for the Dutch language
+#
+# tense - wijs
+# Infinitive - Onbepaalde wijs: zijn; wezen
+# Present participle - Tegenwoordig deelwoord: zijnd
+# Past participle - Verleden deelwoord: geweest
+# Imperative - Gebiedende wijs
+# Present - Onvoltooid tegenwoordige tijd [o t t
+# Present Perfect - Voltooid tegenwoordige tijd
+# Past - Onvoltooid verleden tijd
+# Past Perfect - Voltooid verleden tijd
+# Future - Onvoltooid tegenwoordige toekomende tijd
+# Future Perfect - Voltooid tegenwoordige toekomende tijd
+# Imperfect - Onvoltooid verleden toekomende tijd
+# Perfect - Voltooid verleden toekomende tijd
+#############################################################################
 
-verbs=[
-    ('être',  'to be'),
-    ('avoir', 'to have'),
-    ('aller', 'to go'),
-    ('faire', 'to do'),
+zijn_present        = ('ben',     'bent',       'is',      'zijn',       'zijn',     'zijn')
+zijn_imperfect      = ('was',     'was',        'was',     'waren',      'waren',    'waren')
+zijn_future         = ('zal',     'zal',        'zal',     'zullen',     'zullen',   'zullen')
+zijn_conditional    = ('zou',     'zou',        'zou',     'zouden',     'zouden',   'zouden')
 
-    ('aimer',   'to like'),
-    ('parler',  'to speak'),
-    ('visiter', 'to visit'),
-    ('donner',  'to give'),
+class Dutch:
+    def __init__(self):
+        self.pronouns=('ik','jij', 'hij/zij', 'wij', 'jullie', 'zijn')
 
-    ('attendre',  'to wait (for)'),
-    ('défendre',  'to defend'),
-    ('descendre', 'to descend'),
-    ('entendre',  'to hear'),
-    ('étendre',   'to stretch'),
-    ('fondre',    'to melt'),
-    ('pendre',    'to hang, suspend'),
-    ('perdre',    'to lose'),
-    ('prétendre', 'to claim'),
-    ('rendre',    'to give back, return'),
-    ('répandre',  'to spread, scatter'),
-    ('répondre',  'to answer'),
-    ('vendre',    'to sell'),
+dutch = Dutch()
 
-    ('abolir',    'to abolish'),
-    ('agir',      'to act'),
-    ('avertir',   'to warn'),
-    ('bâtir',     'to build'),
-    ('bénir',     'to bless'),
-    ('choisir',   'to choose'),
-    ('établir',   'to establish'),
-    ('étourdir',  'to stun, deafen, make dizzy'),
-    ('finir',     'to finish'),
-    ('grossir',   'to gain weight, get fat'),
-    ('guérir',    'to cure, heal, recover'),
-    ('maigrir',   'to lose weight, get thin'),
-    ('nourrir',   'to feed, nourish'),
-    ('obé ir',    'to obey'),
-    ('punir',     'to punish'),
-    ('réfléchir', 'to reflect, think'),
-    ('remplir',   'to fill'),
-    ('réussir',   'to succeed'),
-    ('rougir',    'to blush, turn red'),
-    ('vieillir'   'to grow old')
+dutch_rules= [
+    rule(french, 'zijn', '',
+         zijn_present,
+         use_participle('geweest'),
+         zijn_imperfect,
+         use_participle('geweest', zijn_imperfect), # pluperfect
+         zijn_future,
+         use_participle('geweest', zijn_future),
+         zijn_conditional,
+         # TODO use_participle('geweest', zijn_conditional),
+         None,
+         None)
 ]
-
 #############################################################################
 #  Generate a TSV conjugation table
 #############################################################################
 
-def tsv_conjugation_table (verbs, rules):
-    "Generate a table of conjugations in Tab Separated File (TSV) format."
-    print ("French\tEnglish\tTense\tConjugation")
-    for verb in verbs:
-        french = verb[0]
-        english = verb[1]
-        for rule in rules:
-            if rule.match(french):
-                for lines in rule.conjugate(french, english):
-                    for line in lines:
-                        print '\t'.join(line)
-                break
+def conjugate_tsv_from_stdin ():
+    "Generate a table of conjugations in Tab Separated File (TSV) format given a list of verbs in TSV format."
+    count = 0
+    for line in fileinput.input():
+        line=line.replace('\n', '').replace('\r', '')
+        words=line.split('\t')
+        verb=words[0]
+        english=words[1]
+        if count == 0:
+            if verb == "French":
+                rules=french_rules
+            elif verb == "Dutch":
+                rules=dutch_rules
+            else:
+                raise Error("Language %s unknown" % (verb))
+        else:
+            for line in match_rules(rules, verb, english):
+                    print '\t'.join(line)
+                
+        count = count+1
 
-            
-
-tsv_conjugation_table (verbs, rules)
+conjugate_tsv_from_stdin()

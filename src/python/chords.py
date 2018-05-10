@@ -43,7 +43,7 @@ def common_chords (notes):
 def tsv_chord_table ():
     "Generate a chord tables in Tab Separated File (TSV) format"
     for row in common_chords (notes):
-        print "\n".join (["\t".join([str(s) for s in r]) for r in row])
+        print("\n".join (["\t".join([str(s) for s in r]) for r in row]))
 
 # Generate a chord table
-tsv_chord_table
+tsv_chord_table()
