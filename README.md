@@ -2,6 +2,13 @@
 
 Some simple example programs in python.
 
+## To build
+
+```
+$ cd src/python
+$ make
+```
+
 
 ## chords.py
 
