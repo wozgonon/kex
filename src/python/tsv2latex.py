@@ -1,4 +1,20 @@
 #!/bin/python
+# *- coding: utf8 -*
+
+#    Copyright (C) 2018  Wozgonon
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import fileinput
 
@@ -23,7 +39,7 @@ class Latex:
 
     def header (self, title, author):
         print("\\documentclass[10pt,draft,twocolumn]{article}")
-        print("\\usepackage[utf8]{inputenc}")
+        print("\\usepackage[latin1]{inputenc}")
         print("\\usepackage{geometry}")
         print("\\geometry{a4paper}")
         print("\\usepackage{sectsty}")
@@ -34,6 +50,7 @@ class Latex:
         print("\\author{%s}" % (author))
         print("\\date{}")
         print("\\begin{document}")
+        
 
     def trailer (self):
         print("\\end{document}")
@@ -60,6 +77,7 @@ def format_tsv (formatter):
                     formatter.end_section(section)
                 formatter.section(section)
                 last_section=section
+                last_subsection=None
             if subsection != last_subsection:
                 formatter.subsection(subsection)
                 last_subsection=subsection
