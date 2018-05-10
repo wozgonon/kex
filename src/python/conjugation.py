@@ -167,83 +167,83 @@ def use_stem (stem, endings):
     "Conjugations constructed from a stem with different endings for each pronoun"
     return [ending.replace('-', stem).replace('+', stem) for ending in endings]
     
-def use_participle(participle, verb_present=avoir_present):
+def use_auxiliary(participle, auxillary_verb_conjugations=avoir_present):
     "Conjugations based on a composite of an auxiliary verb and a partiple"
-    return [avoir + ' ' + participle for avoir in verb_present]
+    return [auxillary + ' ' + participle for auxillary in auxillary_verb_conjugations]
 
 
 
 french.rule('être', '',
          etre_present,
-         use_participle('été'),
+         use_auxiliary('été'),
          use_stem('ét', imparfait),
-         use_participle('été', avoir_imperfect), # pluperfect
+         use_auxiliary('été', avoir_imperfect), # pluperfect
          use_stem('ser', futur),
-         use_participle('été', avoir_future),
+         use_auxiliary('été', avoir_future),
          use_stem('ser', conditional),
          etre_subjunctive,
-         use_participle('été', avoir_subjunctive))
+         use_auxiliary('été', avoir_subjunctive))
 french.rule('aller', '',
          ('vais', 'va', 'va',  'allez', 'allons', 'vont'),
-         use_participle('allé', etre_present),
+         use_auxiliary('allé', etre_present),
          use_stem('all', imparfait),
-         use_participle('allé', avoir_imperfect),  # pluperfect
+         use_auxiliary('allé', avoir_imperfect),  # pluperfect
          use_stem('ir', futur),
-         use_participle('allé', avoir_future),
+         use_auxiliary('allé', avoir_future),
          use_stem('ir', conditional),
          ('aille', 'ailles', 'aille',  'alliez', 'allions', 'aillent'),
-         use_participle('allé', avoir_subjunctive))
+         use_auxiliary('allé', avoir_subjunctive))
 french.rule('avoir', '',
          avoir_present,
-         use_participle('eu'),
+         use_auxiliary('eu'),
          use_stem('av', imparfait),
-         use_participle('eu', avoir_imperfect),  # pluperfect
+         use_auxiliary('eu', avoir_imperfect),  # pluperfect
          use_stem('aur', futur),
-         use_participle('eu', avoir_future),
+         use_auxiliary('eu', avoir_future),
          use_stem('aur', conditional),
          avoir_subjunctive,
-         use_participle('eu', avoir_subjunctive))
+         use_auxiliary('eu', avoir_subjunctive))
 french.rule('faire', '',
         ('fais',   'fais', 'fait',   'faissez',  'faisson',  'font'),
-         use_participle('fait'),
+         use_auxiliary('fait'),
          use_stem('fais', imparfait),
-         use_participle('fait', avoir_imperfect),  # pluperfect
+         use_auxiliary('fait', avoir_imperfect),  # pluperfect
          use_stem('fer', futur),  # pluperfect
-         use_participle('fait', avoir_future),
+         use_auxiliary('fait', avoir_future),
          use_stem('fer', conditional),
-         use_participle('fas', present_subjunctive),
-         use_participle('fait', avoir_subjunctive))
+         use_auxiliary('fas', present_subjunctive),
+         use_auxiliary('fait', avoir_subjunctive))
 french.rule('.*re', '-re',
         ('-e','-es','-e','-ons','-ez','-ent'),
-         use_participle('-u'),
+         use_auxiliary('-u'),
          imparfait,
-         use_participle('-u', avoir_imperfect),  # pluperfect
+         use_auxiliary('-u', avoir_imperfect),  # pluperfect
          ('-rai', '-ras', '-ra', '-rez', '-rons', '-ront'),
-         use_participle('-u', avoir_future),
+         use_auxiliary('-u', avoir_future),
          conditional,
          present_subjunctive,
-         use_participle('-u', avoir_subjunctive))
+         use_auxiliary('-u', avoir_subjunctive))
 french.rule('.*er', '-er',
          ('-e','-es','-e','-ons','-ez','-ent'),
 #         ('-s','-s','','-ons','-ez','-ent'),
-         use_participle('-é'),
+         use_auxiliary('-é'),
          imparfait,
-         use_participle('-é', avoir_imperfect),  # pluperfect
+         use_auxiliary('-é', avoir_imperfect),  # pluperfect
          futur,
-         use_participle('-é', avoir_future),
+         use_auxiliary('-é', avoir_future),
          conditional,
          present_subjunctive,
-         use_participle('-é', avoir_subjunctive))
+         use_auxiliary('-é', avoir_subjunctive))
 french.rule('.*ir', '-ir',   # -mir, -tir, or -vir
         ('-is','-is','-it','-issons','-issez','-issent'),
-         use_participle('-i'),
+         use_auxiliary('-i'),
          imparfait,
-         use_participle('-i', avoir_imperfect),  # pluperfect
+         use_auxiliary('-i', avoir_imperfect),  # pluperfect
          futur,
-         use_participle('-i', avoir_future),
+         use_auxiliary('-i', avoir_future),
          conditional,
          present_subjunctive,
-         use_participle('-i', avoir_subjunctive))
+         use_auxiliary('-i', avoir_subjunctive))
 
 
 #############################################################################
@@ -295,30 +295,48 @@ languages["Dutch"] = dutch
 
 dutch.rule('zijn', '',
          zijn_present,
-         use_participle('geweest', zijn_present),
+         use_auxiliary('geweest', zijn_present),
          zijn_imperfect,
-         use_participle('geweest', zijn_imperfect), # pluperfect
+         use_auxiliary('geweest', zijn_imperfect), # pluperfect
          zijn_future,
-         use_participle('geweest', zijn_future),
-         zijn_conditional)          # TODO use_participle('geweest', zijn_conditional),
+         use_auxiliary('geweest', zijn_future),
+         zijn_conditional)          # TODO use_auxiliary('geweest', zijn_conditional),
+
+dutch.rule('hebben', '',
+         hebben_present,
+         use_auxiliary('ge-d', hebben_present),
+           hebben_imperfect,
+         use_auxiliary('ge-d', hebben_imperfect),
+         use_auxiliary('-', zijn_future),
+         use_auxiliary('ge-d', zijn_future),
+         use_auxiliary('-', zijn_conditional))
 
 dutch.rule('.*nen', '-nen',
          ('','-t','-t','-nen','-nen','-nen'),
-         use_participle('ge-d', hebben_present),
+         use_auxiliary('ge-d', hebben_present),
          ('-de','-de','-de','-den','-den','-den'),
-         use_participle('ge-d', hebben_imperfect),
-         use_participle('-', zijn_future),
-         use_participle('ge-d', zijn_future),
-         use_participle('-', zijn_conditional))
+         use_auxiliary('ge-d', hebben_imperfect),
+         use_auxiliary('-', zijn_future),
+         use_auxiliary('ge-d', zijn_future),
+         use_auxiliary('-', zijn_conditional))
+
+dutch.rule('.*ben', '-ben',
+         ('','-t','-t','-ben','-ben','-ben'),
+         use_auxiliary('ge-d', hebben_present),
+         ('-de','-de','-de','-den','-den','-den'),
+         use_auxiliary('ge-d', hebben_imperfect),
+         use_auxiliary('-', zijn_future),
+         use_auxiliary('ge-d', zijn_future),
+         use_auxiliary('-', zijn_conditional))
 
 dutch.rule('.*en', '-en',
          ('','-t','-t','-en','-en','-en'),
-         use_participle('ge-d', hebben_present),
+         use_auxiliary('ge-d', hebben_present),
          ('-e','-e','-e','-en','-en','-en'),
-         use_participle('ge-d', hebben_imperfect),
-         use_participle('-', zijn_future),
-         use_participle('ge-d', zijn_future),
-         use_participle('-', zijn_conditional))
+         use_auxiliary('ge-d', hebben_imperfect),
+         use_auxiliary('-', zijn_future),
+         use_auxiliary('ge-d', zijn_future),
+         use_auxiliary('-', zijn_conditional))
                                 
 
 #############################################################################
