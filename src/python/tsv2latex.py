@@ -12,9 +12,8 @@ class Latex:
         #print("\\twocolumn")
 
     def end_section(self, heading):
-        pass
         #print("\\onecolumn")
-        #print("\\newpage") # Try \pagebreak
+        print("\\newpage") # Try \pagebreak
 
     def subsection(self, heading):
         print("\\subsection{%s}" % (heading))
@@ -23,11 +22,14 @@ class Latex:
         print("%s\\\\" % (text))
 
     def header (self, title, author):
-        print("\\documentclass[11pt,twocolumn]{article}")
+        print("\\documentclass[10pt,draft,twocolumn]{article}")
         print("\\usepackage[utf8]{inputenc}")
         print("\\usepackage{geometry}")
         print("\\geometry{a4paper}")
         print("\\usepackage{sectsty}")
+#        print("\\usepackage{draftwatermark}")
+#        print("\\SetWatermarkText{Confidential}")
+#        print("\\SetWatermarkScale{5}")
         print("\\title{%s}" % (title))
         print("\\author{%s}" % (author))
         print("\\date{}")
@@ -42,7 +44,7 @@ class Latex:
 
 def format_tsv (formatter):
     "Format a TSV file read from stdin and a latex document"
-    formatter.header ("Conjugations", "Wozgonon")
+    formatter.header ("Conjugations (DRAFT)", "...")
     count=0
     last_section=None
     last_subsection=None

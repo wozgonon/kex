@@ -1,6 +1,22 @@
 #!/bin/python
 # *- coding: utf8 -*
 
+#    chords.py - Generates a table of musical chords in TSV format.
+#    Copyright (C) 2018  Wozgonon
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU Affero General Public License as published
+#    by the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU Affero General Public License for more details.
+#
+#    You should have received a copy of the GNU Affero General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import re
 
 #############################################################################
@@ -13,8 +29,8 @@ vowels=['a','â','e','ê', 'é','á','i','í','o','ó','u','ú']
 def startsWithVowel(word): return word[:1] in vowels
 
 class rule ():
-    def __init__ (self, pattern, suffix, present, perfect, pluperfect, imparfait, futur, conditional, present_subjunctive, perfect_subjunctive):
-        #  plus_que_parfait, futur, futur_anterior, passe_simple
+    def __init__ (self, pattern, suffix, present, perfect, imparfait, pluperfect, futur, future_perfect, conditional, present_subjunctive, perfect_subjunctive):
+        # TODO plus_que_parfait, futur_anterior
         self.pattern = pattern
         self.suffix = suffix
         self.present = present
@@ -22,6 +38,7 @@ class rule ():
         self.imparfait = imparfait
         self.pluperfect = pluperfect
         self.futur = futur
+        self.future_perfect = future_perfect
         self.conditional = conditional
         self.present_subjunctive = present_subjunctive
         self.perfect_subjunctive = perfect_subjunctive
@@ -30,7 +47,6 @@ class rule ():
         return re.match(self.pattern, infinitive)
 
     def conjugate (self, infinitive, english):
-        #section(infinitive + " (" + english + ")")
         yield self.conjugate_tense (infinitive, english, 'Present', self.present)
         yield self.conjugate_tense (infinitive, english, 'Passé composé', self.perfect)
 
@@ -38,16 +54,15 @@ class rule ():
         yield self.conjugate_tense (infinitive, english,  'Pluperfect', self.pluperfect)
 
         yield self.conjugate_tense (infinitive, english,  'Futur', self.futur)
-        #self.conjugate_tense (infinitive, english,  'Futur perfect', self.futur)
+        yield self.conjugate_tense (infinitive, english,  'Future perfect', self.future_perfect)
 
         yield self.conjugate_tense (infinitive, english,  'Conditional', self.conditional)
-        #self.conjugate_tense (infinitive, english,  'Conditional perfect', self.conditional)
+        # TODO self.conjugate_tense (infinitive, english,  'Conditional perfect', self.conditional)
         
         yield self.conjugate_tense (infinitive, english,  'Present subjunctive', self.present_subjunctive)
-        yield self.conjugate_tense (infinitive, english,  'Perfect subjunctive', self.perfect_subjunctive)
+        # TODO yield self.conjugate_tense (infinitive, english,  'Perfect subjunctive', self.perfect_subjunctive)
 
     def conjugate_tense (self, infinitive, english, tense_name, endings):
-        #subsection(tense_name)
         stem=infinitive[:-len(self.suffix.replace('-','').replace('+',''))]
         for xx in range(0,len(pronouns)):
             pronoun=pronouns[xx]
@@ -55,10 +70,7 @@ class rule ():
             pronoun = "j'" if pronoun == 'je' and startsWithVowel(stem) else pronoun + " "
             expression=pronoun + conjugation
             yield (infinitive, english, tense_name, expression)
-            #yield pronouns + " " + verb + ending
-            #line(pronoun + conjugation)
-            #print('')
-
+   
 #############################################################################
 # Conjugation rules
 #############################################################################
@@ -66,7 +78,8 @@ class rule ():
 etre_present        = ('suis',     'es',       'est',      'etes',       'sommes',     'sont')
 etre_subjunctive    = ('sois que', 'sois que', 'soit que', 'soyez que',  'soyons que', 'soient que')
 avoir_present       = ('ai',       'as',       'a',        'avez',       'avons',      'ont')
-avoir_imperfect     = ('ai',       'as',       'a',        'avez',       'avons',      'ont')
+avoir_future        = ('aurai',    'auras',    'aura',     'aurez',      'aurons',     'auront')
+avoir_imperfect     = ('avais',    'avais',    'avait',    'aviez',      'avions',     'avaient')
 avoir_subjunctive   = ('aie que',  'aies que', 'ait que',  'ayons que',  'ayez que',   'aient que')
 imparfait           = ('-ais',     '-ais',     '-ait',     '-iez',       '-ions',      '-aient')
 futur               = ('+ai',      '+as',      '+a',       '+ez',        '+ons',       '+ont')
@@ -78,8 +91,8 @@ def use_stem (stem, endings):
     return [ending.replace('-', stem).replace('+', stem) for ending in endings]
     
 def use_participle(participle, verb_present=avoir_present):
-    "Conjugations based on a composite of a verb and a partiple"
-    return tuple([avoir + ' ' + participle for avoir in verb_present])
+    "Conjugations based on a composite of an auxiliary verb and a partiple"
+    return [avoir + ' ' + participle for avoir in verb_present]
 
 rules = [
     rule('être', '',
@@ -88,6 +101,7 @@ rules = [
          use_stem('ét', imparfait),
          use_participle('été', avoir_imperfect), # pluperfect
          use_stem('ser', futur),
+         use_participle('été', avoir_future),
          use_stem('ser', conditional),
          etre_subjunctive,
          use_participle('été', avoir_subjunctive)),
@@ -96,8 +110,9 @@ rules = [
          use_participle('allé', etre_present),
          use_stem('all', imparfait),
          use_participle('allé', avoir_imperfect),  # pluperfect
-         use_participle('ir', futur),
-         use_participle('ir', conditional),
+         use_stem('ir', futur),
+         use_participle('allé', avoir_future),
+         use_stem('ir', conditional),
          ('aille', 'ailles', 'aille',  'alliez', 'allions', 'aillent'),
          use_participle('allé', avoir_subjunctive)),
     rule('avoir', '',
@@ -106,6 +121,7 @@ rules = [
          use_stem('av', imparfait),
          use_participle('eu', avoir_imperfect),  # pluperfect
          use_stem('aur', futur),
+         use_participle('eu', avoir_future),
          use_stem('aur', conditional),
          avoir_subjunctive,
          use_participle('eu', avoir_subjunctive)),
@@ -115,6 +131,7 @@ rules = [
          use_stem('fais', imparfait),
          use_participle('fait', avoir_imperfect),  # pluperfect
          use_stem('fer', futur),  # pluperfect
+         use_participle('fait', avoir_future),
          use_stem('fer', conditional),
          use_participle('fas', present_subjunctive),
          use_participle('fait', avoir_subjunctive)),
@@ -124,6 +141,7 @@ rules = [
          imparfait,
          use_participle('-u', avoir_imperfect),  # pluperfect
          ('-rai', '-ras', '-ra', '-rez', '-rons', '-ront'),
+         use_participle('-u', avoir_future),
          conditional,
          present_subjunctive,
          use_participle('-u', avoir_subjunctive)),
@@ -134,6 +152,7 @@ rules = [
          imparfait,
          use_participle('-é', avoir_imperfect),  # pluperfect
          futur,
+         use_participle('-é', avoir_future),
          conditional,
          present_subjunctive,
          use_participle('-é', avoir_subjunctive)),
@@ -143,6 +162,7 @@ rules = [
          imparfait,
          use_participle('-i', avoir_imperfect),  # pluperfect
          futur,
+         use_participle('-i', avoir_future),
          conditional,
          present_subjunctive,
          use_participle('-i', avoir_subjunctive))

@@ -41,3 +41,9 @@ To create a PDF file directly from a TSV file:
 ```
 $ ./conjugation.py | ./tsv2latex.py | pdflatex > conjugation.pdf
 ```
+
+To create a .tex file from a TSV file, then create a PDF.
+
+```
+./conjugation.py | ./tsv2latex.py > conjugation.tex && pdflatex conjugation.tex
+```
