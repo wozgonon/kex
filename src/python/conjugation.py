@@ -78,22 +78,9 @@ class Rule ():
             tense = self.tenses[name]
             yield self.conjugate_tense (infinitive, english, name, tense)
 
-        ###yield self.conjugate_tense (infinitive, english, 'Present', self.present)
-        ###yield self.conjugate_tense (infinitive, english, 'Perfect', self.perfect) # Passé composé
-
-        ###yield self.conjugate_tense (infinitive, english, 'Imperfect', self.imparfait) # Imparfait
-        ###yield self.conjugate_tense (infinitive, english,  'Pluperfect', self.pluperfect)
-
-        ###yield self.conjugate_tense (infinitive, english,  'Future', self.futur) # Futur
-        ###yield self.conjugate_tense (infinitive, english,  'Future perfect', self.future_perfect)
-
-        ###yield self.conjugate_tense (infinitive, english,  'Conditional', self.conditional)
-        # TODO self.conjugate_tense (infinitive, english,  'Conditional perfect', self.conditional)
-        # TODO self.conjugate_tense (infinitive, english,  'Conditional future', self.conditional)
-
-        ###if self.present_subjunctive is not None:
-        ###    yield self.conjugate_tense (infinitive, english,  'Present subjunctive', self.present_subjunctive)
-            # TODO yield self.conjugate_tense (infinitive, english,  'Perfect subjunctive', self.perfect_subjunctive)
+        # TODO  'Conditional perfect'
+        # TODO  'Conditional future'
+        # TODO  'Perfect subjunctive'
 
     def conjugate_tense (self, infinitive, english, tense_name, endings):
         #       stem=infinitive[:-len(self.suffix.replace('-','').replace('+',''))]
@@ -151,7 +138,6 @@ assert(french.make_pronoun('tu', 'étre') == 'tu ')
 assert(french.make_pronoun('je', 'crois') == 'je ')
 assert(french.make_pronoun('nous', 'crois') == 'nous ')
 
-
 etre_present        = ('suis',     'es',       'est',      'etes',       'sommes',     'sont')
 etre_subjunctive    = ('sois que', 'sois que', 'soit que', 'soyez que',  'soyons que', 'soient que')
 avoir_present       = ('ai',       'as',       'a',        'avez',       'avons',      'ont')
@@ -170,8 +156,6 @@ def use_stem (stem, endings):
 def use_auxiliary(participle, auxillary_verb_conjugations=avoir_present):
     "Conjugations based on a composite of an auxiliary verb and a partiple"
     return [auxillary + ' ' + participle for auxillary in auxillary_verb_conjugations]
-
-
 
 french.rule('être', '',
          etre_present,
@@ -305,14 +289,14 @@ dutch.rule('zijn', '',
 dutch.rule('hebben', '',
          hebben_present,
          use_auxiliary('ge-d', hebben_present),
-           hebben_imperfect,
+         hebben_imperfect,
          use_auxiliary('ge-d', hebben_imperfect),
          use_auxiliary('-', zijn_future),
          use_auxiliary('ge-d', zijn_future),
          use_auxiliary('-', zijn_conditional))
 
 dutch.rule('.*nen', '-nen',
-         ('','-t','-t','-nen','-nen','-nen'),
+         ('-','-t','-t','-nen','-nen','-nen'),
          use_auxiliary('ge-d', hebben_present),
          ('-de','-de','-de','-den','-den','-den'),
          use_auxiliary('ge-d', hebben_imperfect),
@@ -321,7 +305,7 @@ dutch.rule('.*nen', '-nen',
          use_auxiliary('-', zijn_conditional))
 
 dutch.rule('.*ben', '-ben',
-         ('','-t','-t','-ben','-ben','-ben'),
+         ('-','-t','-t','-ben','-ben','-ben'),
          use_auxiliary('ge-d', hebben_present),
          ('-de','-de','-de','-den','-den','-den'),
          use_auxiliary('ge-d', hebben_imperfect),
@@ -330,7 +314,7 @@ dutch.rule('.*ben', '-ben',
          use_auxiliary('-', zijn_conditional))
 
 dutch.rule('.*en', '-en',
-         ('','-t','-t','-en','-en','-en'),
+         ('-','-t','-t','-en','-en','-en'),
          use_auxiliary('ge-d', hebben_present),
          ('-e','-e','-e','-en','-en','-en'),
          use_auxiliary('ge-d', hebben_imperfect),
@@ -349,7 +333,12 @@ class Esperanto:
     def __init__(self):
         self.pronouns=('mi/vi/li/ŝi/ni/ili'),
         # Infinitive -i
-        self.rules = (Rule(self, '.*i', '-i', {"Indicative present" : ('-as'), "Indicative past" : ('-is'), "Indicative future" : ('-os'), "Conditional" : ('-us') }),)
+        tenses = collections.OrderedDict()
+        tenses["Indicative present"] = ['-as']
+        tenses["Indicative past"]    = ['-is']
+        tenses["Indicative future"]  = ['-os']
+        tenses["Conditional"]        = ['-us']
+        self.rules = [(Rule(self, '.*i', '-i', tenses))]
 
     def make_pronoun (self, pronoun, conjugation):
         return pronoun + ' '
