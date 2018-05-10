@@ -15,10 +15,14 @@ def common_chords (notes):
     yield [['Note', "Chord"] + list(notes)]
     yield chords(notes, "major",      [0,4,7])
     yield chords(notes, "minor",      [0,3,7])
-    yield chords(notes, "dim.", [0,3,6])
-    yield chords(notes, "aug.",  [0,4,8])
-#    yield chords(notes, "maj.7th",  [0,4,8])
-#    yield chords(notes, "min.7th",  [0,4,8])
+    yield chords(notes, "per.5th",      [0,7])    # perfect 5th
+    yield chords(notes, "dim.",       [0,3,6])    # diminshed
+    yield chords(notes, "aug.",       [0,4,8])    # augmented
+    yield chords(notes, "maj.7th",    [0,4,7,11]) # Major 7th
+    yield chords(notes, "min.7th",    [0,3,7,10]) # Minor 7th
+    yield chords(notes, "dom.7th",    [0,4,7,10]) # Dominant  7th
+    yield chords(notes, "sus2",       [0,2,7])    # Suspended 2
+    yield chords(notes, "sus4",       [0,5,7])    # Suspended 4
 
 def tsv_chord_table ():
     "Generate a chord tables in Tab Separated File (TSV) format"
