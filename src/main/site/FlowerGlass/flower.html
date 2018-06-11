@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <title>Bifurcation trees</title>
+
+    <style type="text/css">
+      table{
+      border-collapse: collapse;
+      border: 1px solid black;
+      }
+      table td{
+      border-collapse: collapse;
+      }
+    </style>
+    <script src="flower.js"> </script>
+
+    <script>
+      function flower_pad () {
+          let pad = new Pad ("flowers_canvas")
+          pad.clear ()
+          return pad
+      }
+      function redraw (width_factor, angle_factor, length_factor, color_factor, width, length, angle_in_degrees, color, n) {
+          let pad = flower_pad ()
+          let flower = new Flower (pad, width_factor, angle_factor, length_factor, color_factor)
+          pad.ctx.beginPath ()
+          let x0 = pad.canvas.width/2
+          let y0 = pad.canvas.height
+          let angle = angle_in_degrees * Math.PI / 180
+          flower.bifurcate (x0, y0, width, length, angle, color, n)
+          pad.ctx.stroke ()
+      }
+    function draw_flower () {
+      let color = document.getElementById ("color").value
+      let color_factor = document.getElementById ("color_factor").value
+      let angle = document.getElementById ("angle").value
+      let width_factor = document.getElementById ("width_factor").value
+      let angle_factor = document.getElementById ("angle_factor").value
+      let length_factor = document.getElementById ("length_factor").value
+      let width = document.getElementById ("width").value
+      let length = document.getElementById ("length").value
+      let steps = document.getElementById ("steps").value
+      console.log (angle)
+      redraw(width_factor, angle_factor, length_factor, color_factor, width, length, angle, color, steps)
+    }
+      </script>
+  </head>
+  <body>
+    <table>
+      <tr><th>Width</th><th>Angle</th><th>Length</th><th>Color</th><th>Steps</th></tr>
+      <tr>
+	<td><input type="number" id="width" min="1", max="20" value="1" step="1" onChange="draw_flower()"></td>
+	<td><input type="number" id="angle" min="0", max="90" value="40" step="5" onChange="draw_flower()"></td>
+	<td><input type="number" id="length" value="100" min="10", max="100" step="10" onChange="draw_flower()"></td>
+	<td><input type="color" id="color"   onChange="draw_flower()"></td>
+	<td><input type="number" id="steps" value="12" min="1" max="18" onChange="draw_flower()"></td>
+      </tr>
+      <tr>
+      <td><input type="number" id="width_factor" value="1" min=".05", max="1" step=".05" onChange="draw_flower()"></td>
+      <td><input type="number" id="angle_factor" value=".7" min=".05", max="1" step=".05" onChange="draw_flower()"></td>
+      <td><input type="number" id="length_factor" value=".8" min=".1", max="2" step=".1" onChange="draw_flower()"></td>
+      <td><input type="number" id="color_factor" value="1" min=".1", max="2" step=".1" onChange="draw_flower()"></td>
+      <td></td>
+      </table>
+    <br></br>
+    <canvas id="flowers_canvas" width="800" height="500"></canvas>
+
+  </body>
+
+  <script>
+    draw_flower ()
+     //redraw(.7, .8, 100, 40, 12)
+  </script>
+</html>
