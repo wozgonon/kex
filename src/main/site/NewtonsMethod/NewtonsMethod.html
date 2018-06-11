@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Newtons method using MathJax</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+
+<script src="NewtonsMethod.js"></script>
+
+<style>
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    background-color: #dddddd;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+li * {
+    display: inline;
+    float: left;
+    color: #000;
+    padding: 4px 14px;
+    text-decoration: none;
+}
+.active {
+    background-color: #4CAF50;
+}
+li *:hover {
+    background-color: #555;
+    color: white;
+}
+li {
+    border-right: 1px solid #bbb;
+}
+
+li:last-child {
+    border-right: none;
+}
+</style>
+<script>
+  function display (plot, derivation) {
+    document.getElementById ("plot").style = "display:" + plot
+    document.getElementById ("derivation").style = "display:" + derivation
+  }
+</script>
+</head>
+<body>
+
+  <!--------------------------------------------------------------------------------------------------------->
+
+  <ul>
+    <li><a onClick="display ('block', 'none')">Newton's method</a></li>
+    <li><a onClick="display ('none', 'block')">Derivation</a></li>
+    <li style="float:right"><a href="https://en.wikipedia.org/wiki/Newton%27s_method">Wikipedia</a></li>
+    <!-- li style="float:right"><a class="active" href="#about"About/al -->
+  </ul>
+<br>
+  <p>
+  <a href="https://en.wikipedia.org/wiki/Newton%27s_method">Newtons method</a>
+  to find the roots of an equation, where $f(x) = 0$.
+
+  <!--------------------------------------------------------------------------------------------------------->
+
+  <div id="derivation" style="display:none">
+  <p>
+    Formula for the gradient of a line: $m =  \frac{y_1-y_0}{x_1-x_0}$
+  <p>
+    Given that: $y=f(x), y_0=f(x_0), y_1=f(x_1)$
+  <p>
+    Given that we are looking for $f(x_1) = 0$
+  <p>
+    $$
+    \begin{align*}
+    f'(x_0) &=  \frac{f(x_1)-f(x_0)}{x_1-x_0} \\
+                  &=  \frac{-f(x_0)}{x_1-x_0}  & \text{given } f(x_1) = 0 \\
+    x_1-x_0  &=  \frac{-f(x_0)}{f'(x_0)} \\
+    x_1  &=  x_0 - \frac{f(x_0)}{f'(x_0)} \\
+    x_{n+1}  &=  x_n - \frac{f(x_n)}{f'(x_n)} \\
+    \end{align*}
+$$
+  </p>
+  </div>
+
+  <!--------------------------------------------------------------------------------------------------------->
+
+  <div id="plot" style="display:block">
+    <script>
+
+      s_func = Math.sin
+      s_derivative = Math.cos
+
+      function redrawFunction () {
+        let canvas = document.getElementById ("canvas1")
+        let func_derivative = eval (document.getElementById ("function").value)
+        console.log ("redraw:" + func_derivative)
+        s_func = func_derivative [0]
+        s_derivative = func_derivative [1]
+        console.log ("redraw s_func:" + s_func)
+        drawFunction (canvas, s_func)
+      }
+      function drawNewton (initial_x, func, derivative) {
+        let canvas = document.getElementById ("canvas1")
+        drawFunction (canvas, func)
+        let precision = document.getElementById ("precision").value
+        drawNewtonsMethod (canvas, func, derivative, initial_x, precision)
+      }
+
+      function minus_sin (xx) { return -Math.sin(xx) }
+      function sec (xx) { return 1/Math.cos(xx) }
+      function sec2 (xx) { let s = sec(xx); return s*s }
+      function sqr (xx) { return xx*xx }
+      function double (xx) { return 2*xx }
+      function cube (xx) { return xx*xx*xx }
+      function trebleSqr (xx) { return 3*xx*xx }
+
+      function polynomial1 (xx) { return cube(xx) + sqr(xx) + xx/40 }
+      function polynomial1derivative (xx) { return trebleSqr(xx) + double(xx) + 1/40 }
+      function polynomial2 (xx) { return cube(xx)*xx - cube(xx) + sqr(xx) + xx/100 }
+      function polynomial2derivative (xx) { return 4*cube(xx) - trebleSqr(xx) + double(xx) + 1/100 }
+
+    </script>
+    <select id="function" onChange="redrawFunction()">
+      <option value="[Math.sin, Math.cos]">Sin</option>
+      <option value="[Math.cos, minus_sin]">Cos</option>
+      <option value="[Math.tan, sec2]">Tan</option>
+      <option value="[sqr, double]">Square</option>
+      <option value="[cube, trebleSqr]">Cube</option>
+      <option value="[polynomial1, polynomial1derivative]">Polynomial order 3</option>
+      <option value="[polynomial2, polynomial2derivative]">Polynomial order 4</option>
+    </select>
+    Precision:  <input id="precision" type="number" value=".01" min="0.0000000001" max="1" step=".001"></input>
+    <a id="message"></a>
+  <br>
+  <br>
+  <canvas id="canvas1" width="800" height="500"></canvas>
+  <script>
+    let canvas = document.getElementById ("canvas1")
+    drawAxis(canvas)
+    canvas.addEventListener ('click', function (event) {
+    let x = event.pageX - canvas.offsetLeft
+    let y = event.pageY - canvas.offsetTop
+    drawNewton (x - canvas.width/2, s_func, s_derivative)
+    })
+    redrawFunction()
+  </script>
+  </div>
+  
+  <!--------------------------------------------------------------------------------------------------------->
+
+</body>
+</html>
